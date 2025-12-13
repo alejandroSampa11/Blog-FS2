@@ -1,0 +1,48 @@
+name: Build and Deploy Docker Compose (OCI)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy on OCI via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/django-oci || exit 1
+
+            echo "Pull latest code"
+            git pull origin main
+
+            echo "Create .env file"
+            cat > .env << EOF
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            DEBUG=False
+            EOF
+
+            echo "Stop old containers"
+            docker-compose down --remove-orphans
+
+            echo "Build images"
+            docker-compose build
+
+            echo "Start containers"
+            docker-compose up -d
+
+            echo "Run migrations"
+            docker-compose exec -T web python manage.py migrate
