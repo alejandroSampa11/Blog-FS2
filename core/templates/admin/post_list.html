@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">{{ title }}</h1>
+                <a href="{% url 'admin_create_post' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear Nuevo Post
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" name="q" class="form-control" placeholder="Buscar por título o contenido..." value="{{ request.GET.q }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="status" class="form-select">
+                                <option value="">Todos los estados</option>
+                                <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Borrador</option>
+                                <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Publicado</option>
+                                <option value="archived" {% if request.GET.status == 'archived' %}selected{% endif %}>Archivado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin_post_list' %}" class="btn btn-light w-100">Limpiar Filtros</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabla de posts -->
+            <div class="card">
+                <div class="card-body">
+                    {% if posts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Título</th>
+                                        <th>Autor</th>
+                                        <th>Categoría</th>
+                                        <th>Estado</th>
+                                        <th>Destacado</th>
+                                        <th>Vistas</th>
+                                        <th>Fecha Creación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for post in posts %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ post.title|truncatechars:50 }}</strong>
+                                                {% if post.excerpt %}
+                                                    <br><small class="text-muted">{{ post.excerpt|truncatechars:80 }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ post.author.username }}</td>
+                                            <td>
+                                                {% if post.category %}
+                                                    <span class="badge bg-info">{{ post.category.name }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Sin categoría</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if post.status == 'published' %}
+                                                    <span class="badge bg-success">Publicado</span>
+                                                {% elif post.status == 'draft' %}
+                                                    <span class="badge bg-warning text-dark">Borrador</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Archivado</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if post.is_featured %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-muted"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ post.views_count }}</td>
+                                            <td>{{ post.created_at|date:"d/m/Y H:i" }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    {% if post.status == 'published' %}
+                                                        <a href="{% url 'post_detail' post.slug %}" class="btn btn-outline-primary" title="Ver" target="_blank">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    <a href="{% url 'admin_edit_post' post.slug %}" class="btn btn-outline-secondary" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button onclick="confirmDelete('{{ post.slug }}', '{{ post.title|escapejs }}')" class="btn btn-outline-danger" title="Eliminar">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        {% if page_obj.has_other_pages %}
+                            <nav aria-label="Page navigation" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Primera</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Anterior</a>
+                                        </li>
+                                    {% endif %}
+
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Siguiente</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Última</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay posts disponibles</p>
+                            <a href="{% url 'admin_create_post' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Crear tu primer post
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el post?</p>
+                <p class="fw-bold" id="deletePostTitle"></p>
+                <p class="text-muted small">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="deletePost()">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Loading -->
+<div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <h4 class="mt-4" id="loadingText">Procesando...</h4>
+                <p class="text-muted">Por favor espera un momento</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table > :not(caption) > * > * {
+        padding: 0.75rem;
+    }
+    .btn-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+
+<script>
+    let postSlugToDelete = null;
+    
+    function confirmDelete(slug, title) {
+        postSlugToDelete = slug;
+        document.getElementById('deletePostTitle').textContent = title;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+    
+    function deletePost() {
+        if (!postSlugToDelete) return;
+        
+        // Cerrar modal de confirmación
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        
+        // Mostrar modal de loading
+        document.getElementById('loadingText').textContent = 'Eliminando post...';
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+        
+        // Realizar petición AJAX
+        fetch(`/admin-panel/posts/delete/${postSlugToDelete}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingModal.hide();
+            if (data.success) {
+                // Recargar la página para mostrar cambios
+                location.reload();
+            } else {
+                alert('Error al eliminar el post: ' + data.error);
+            }
+        })
+        .catch(error => {
+            loadingModal.hide();
+            alert('Error al eliminar el post');
+            console.error(error);
+        });
+    }
+</script>
+{% endblock %}
