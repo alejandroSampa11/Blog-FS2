@@ -21,7 +21,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_SSH_KEY }}
           script: |
-            cd /home/ubuntu/django-oci || exit 1
+            cd /home/ubuntu/Blog-FS2 || exit 1
 
             echo "Pull latest code"
             git pull origin main
