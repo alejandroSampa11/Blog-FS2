@@ -4,13 +4,22 @@
 {% block title %}{{ title }} - Admin Panel{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<!-- Quill Editor CSS y JS -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<div class="container-fluid mt-4 px-4">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2">{{ title }}</h1>
-                <a href="{% url 'admin_post_list' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Volver a la lista
+            <!-- Header mejorado -->
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <div>
+                    <h1 class="h2 mb-1 fw-bold text-primary">
+                        <i class="fas fa-edit me-2"></i>{{ title }}
+                    </h1>
+                    <p class="text-muted mb-0">Modifica los campos que desees actualizar</p>
+                </div>
+                <a href="{% url 'admin_post_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a la lista
                 </a>
             </div>
 
@@ -23,46 +32,64 @@
                 {% endfor %}
             {% endif %}
 
-            <div class="card shadow-sm">
+            <div class="card shadow border-0 rounded-3">
                 <div class="card-body p-4">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <!-- Título del Post -->
+                                <div class="mb-4">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold fs-5">
+                                        <i class="fas fa-heading text-primary me-2"></i>{{ form.title.label }}
+                                    </label>
                                     {{ form.title }}
                                     {% if form.title.errors %}
-                                        <div class="text-danger small">{{ form.title.errors }}</div>
+                                        <div class="text-danger small mt-1">{{ form.title.errors }}</div>
                                     {% endif %}
+                                    <div class="form-text"><i class="fas fa-info-circle me-1"></i>El título debe ser atractivo y descriptivo</div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="{{ form.excerpt.id_for_label }}" class="form-label">{{ form.excerpt.label }}</label>
+                                <!-- Extracto -->
+                                <div class="mb-4">
+                                    <label for="{{ form.excerpt.id_for_label }}" class="form-label fw-semibold">
+                                        <i class="fas fa-align-left text-info me-2"></i>{{ form.excerpt.label }}
+                                    </label>
                                     {{ form.excerpt }}
                                     {% if form.excerpt.errors %}
-                                        <div class="text-danger small">{{ form.excerpt.errors }}</div>
+                                        <div class="text-danger small mt-1">{{ form.excerpt.errors }}</div>
                                     {% endif %}
+                                    <div class="form-text"><i class="fas fa-lightbulb me-1"></i>Breve resumen que aparecerá en las tarjetas de vista previa</div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="{{ form.content.id_for_label }}" class="form-label">{{ form.content.label }}</label>
-                                    {{ form.content }}
+                                <!-- Contenido -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-file-alt text-success me-2"></i>{{ form.content.label }}
+                                    </label>
+                                    <div id="quill-editor" class="bg-white" style="min-height: 400px;"></div>
+                                    <input type="hidden" name="content" id="content-hidden" value="{{ post.content|default:'' }}">
                                     {% if form.content.errors %}
-                                        <div class="text-danger small">{{ form.content.errors }}</div>
+                                        <div class="text-danger small mt-1">{{ form.content.errors }}</div>
                                     {% endif %}
+                                    <div class="form-text mt-2"><i class="fas fa-keyboard me-1"></i>Usa el editor para dar formato al contenido</div>
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
-                                <div class="card mb-3">
-                                    <div class="card-header bg-light">
-                                        <h5 class="card-title mb-0">Configuración</h5>
+                            <div class="col-lg-4">
+                                <!-- Card de Configuración -->
+                                <div class="card mb-3 border-0 shadow-sm">
+                                    <div class="card-header bg-primary bg-opacity-10 border-0">
+                                        <h5 class="card-title mb-0 fw-bold text-dark">
+                                            <i class="fas fa-cog me-2 text-primary"></i>Configuración
+                                        </h5>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body p-3">
                                         <div class="mb-3">
-                                            <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                                            <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-flag me-1"></i>{{ form.status.label }}
+                                            </label>
                                             {{ form.status }}
                                             {% if form.status.errors %}
                                                 <div class="text-danger small">{{ form.status.errors }}</div>
@@ -71,9 +98,11 @@
 
                                         <div class="mb-3">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <label for="{{ form.category.id_for_label }}" class="form-label mb-0">{{ form.category.label }}</label>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
-                                                    <i class="fas fa-plus"></i> Nueva
+                                                <label for="{{ form.category.id_for_label }}" class="form-label mb-0 fw-semibold">
+                                                    <i class="fas fa-folder me-1"></i>{{ form.category.label }}
+                                                </label>
+                                                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                                                    <i class="fas fa-plus me-1"></i>Nueva
                                                 </button>
                                             </div>
                                             {{ form.category }}
@@ -82,10 +111,10 @@
                                             {% endif %}
                                         </div>
 
-                                        <div class="mb-3 form-check">
+                                        <div class="form-check form-switch mb-0">
                                             {{ form.is_featured }}
-                                            <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">
-                                                {{ form.is_featured.label }}
+                                            <label class="form-check-label fw-semibold" for="{{ form.is_featured.id_for_label }}">
+                                                <i class="fas fa-star text-warning me-1"></i>{{ form.is_featured.label }}
                                             </label>
                                             {% if form.is_featured.errors %}
                                                 <div class="text-danger small">{{ form.is_featured.errors }}</div>
@@ -94,77 +123,93 @@
                                     </div>
                                 </div>
 
-                                <div class="card mb-3">
-                                    <div class="card-header bg-light">
-                                        <h5 class="card-title mb-0">Imagen Destacada</h5>
+                                <!-- Card de Imagen Destacada -->
+                                <div class="card mb-3 border-0 shadow-sm">
+                                    <div class="card-header bg-primary bg-opacity-10 border-0">
+                                        <h5 class="card-title mb-0 fw-bold text-dark">
+                                            <i class="fas fa-image me-2 text-primary"></i>Imagen Destacada
+                                        </h5>
                                     </div>
-                                    <div class="card-body">
+                                    <div class="card-body p-3">
                                         {% if post.featured_image %}
-                                        <div class="mb-3">
-                                            <label class="form-label">Imagen actual</label>
-                                            <div class="border rounded p-2 bg-light text-center">
-                                                <img src="{{ post.featured_image.file_path.url }}" alt="{{ post.title }}" style="max-width: 100%; max-height: 200px;">
-                                            </div>
+                                        <div class="text-center mb-3">
+                                            <img src="{{ post.featured_image.file_path.url }}" alt="{{ post.title }}" class="img-fluid rounded-3 shadow-sm" style="max-height: 200px; object-fit: cover;">
+                                            <p class="text-muted small mt-2 mb-0"><i class="fas fa-check-circle text-success me-1"></i>Imagen actual</p>
                                         </div>
                                         {% endif %}
 
                                         <div class="mb-3">
-                                            <label for="{{ form.upload_image.id_for_label }}" class="form-label fw-bold">{{ form.upload_image.label }}</label>
+                                            <label for="{{ form.upload_image.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-upload me-1"></i>{{ form.upload_image.label }}
+                                            </label>
                                             {{ form.upload_image }}
                                             {% if form.upload_image.errors %}
-                                                <div class="text-danger small">{{ form.upload_image.errors }}</div>
+                                                <div class="text-danger small mt-1">{{ form.upload_image.errors }}</div>
                                             {% endif %}
                                             {% if form.upload_image.help_text %}
-                                                <div class="form-text">{{ form.upload_image.help_text }}</div>
+                                                <div class="form-text mt-1">{{ form.upload_image.help_text }}</div>
                                             {% endif %}
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="{{ form.image_name.id_for_label }}" class="form-label">{{ form.image_name.label }}</label>
+                                            <label for="{{ form.image_name.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-tag me-1"></i>{{ form.image_name.label }}
+                                            </label>
                                             {{ form.image_name }}
                                             {% if form.image_name.errors %}
-                                                <div class="text-danger small">{{ form.image_name.errors }}</div>
+                                                <div class="text-danger small mt-1">{{ form.image_name.errors }}</div>
                                             {% endif %}
                                         </div>
 
                                         <div id="imagePreview" class="mb-3" style="display: none;">
-                                            <label class="form-label">Vista previa</label>
-                                            <div class="border rounded p-2 bg-light text-center">
-                                                <img id="preview" src="" alt="Preview" style="max-width: 100%; max-height: 200px;">
+                                            <label class="form-label fw-semibold"><i class="fas fa-eye me-1"></i>Vista previa</label>
+                                            <div class="text-center">
+                                                <img id="preview" src="" alt="Preview" class="img-fluid rounded-3 shadow-sm" style="max-height: 200px; object-fit: cover;">
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <label for="{{ form.featured_image.id_for_label }}" class="form-label">O selecciona una existente</label>
+                                        <div class="mb-0">
+                                            <label for="{{ form.featured_image.id_for_label }}" class="form-label fw-semibold">
+                                                <i class="fas fa-images me-1"></i>O selecciona una existente
+                                            </label>
                                             {{ form.featured_image }}
                                             {% if form.featured_image.errors %}
-                                                <div class="text-danger small">{{ form.featured_image.errors }}</div>
+                                                <div class="text-danger small mt-1">{{ form.featured_image.errors }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="card mb-3">
-                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0">{{ form.tags.label }}</h5>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#tagModal">
-                                            <i class="fas fa-plus"></i> Nuevo
-                                        </button>
+                                <!-- Card de Tags -->
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-header bg-primary bg-opacity-10 border-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="card-title mb-0 fw-bold text-dark">
+                                                <i class="fas fa-tags me-2 text-primary"></i>{{ form.tags.label }}
+                                            </h5>
+                                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#tagModal">
+                                                <i class="fas fa-plus me-1"></i>Nuevo
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                                    <div class="card-body p-3" style="max-height: 300px; overflow-y: auto;">
                                         {{ form.tags }}
                                         {% if form.tags.errors %}
-                                            <div class="text-danger small">{{ form.tags.errors }}</div>
+                                            <div class="text-danger small mt-1">{{ form.tags.errors }}</div>
                                         {% endif %}
+                                        <div class="form-text mt-2"><i class="fas fa-hand-pointer me-1"></i>Mantén presionado Ctrl para seleccionar múltiples tags</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'admin_post_list' %}" class="btn btn-light">Cancelar</a>
-                            <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="fas fa-save"></i> Actualizar Post
+                        <!-- Botones de Acción -->
+                        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-4">
+                            <a href="{% url 'admin_post_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" id="submitBtn">
+                                <i class="fas fa-save me-1"></i>Actualizar Post
                             </button>
                         </div>
                     </form>
@@ -191,29 +236,39 @@
 
 <!-- Modal para crear categoría -->
 <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="categoryModalLabel">Crear Nueva Categoría</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                <h5 class="modal-title fw-bold" id="categoryModalLabel">
+                    <i class="fas fa-folder-plus me-2"></i>Crear Nueva Categoría
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="categoryForm">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="{{ category_form.name.id_for_label }}" class="form-label">{{ category_form.name.label }}</label>
+                        <label for="{{ category_form.name.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-tag me-1 text-primary"></i>{{ category_form.name.label }}
+                        </label>
                         {{ category_form.name }}
                     </div>
                     <div class="mb-3">
-                        <label for="{{ category_form.description.id_for_label }}" class="form-label">{{ category_form.description.label }}</label>
+                        <label for="{{ category_form.description.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-align-left me-1 text-primary"></i>{{ category_form.description.label }}
+                        </label>
                         {{ category_form.description }}
                     </div>
-                    <div id="categoryErrors" class="alert alert-danger d-none"></div>
+                    <div id="categoryErrors" class="alert alert-danger d-none rounded-3"></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="createCategory()">Crear Categoría</button>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="createCategory()">
+                    <i class="fas fa-plus me-1"></i>Crear Categoría
+                </button>
             </div>
         </div>
     </div>
@@ -221,52 +276,159 @@
 
 <!-- Modal para crear tag -->
 <div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tagModalLabel">Crear Nuevo Tag</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                <h5 class="modal-title fw-bold" id="tagModalLabel">
+                    <i class="fas fa-tags me-2"></i>Crear Nuevo Tag
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="tagForm">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="{{ tag_form.name.id_for_label }}" class="form-label">{{ tag_form.name.label }}</label>
+                        <label for="{{ tag_form.name.id_for_label }}" class="form-label fw-semibold">
+                            <i class="fas fa-hashtag me-1 text-primary"></i>{{ tag_form.name.label }}
+                        </label>
                         {{ tag_form.name }}
+                        <div class="form-text"><i class="fas fa-info-circle me-1"></i>Los tags ayudan a categorizar y organizar el contenido</div>
                     </div>
-                    <div id="tagErrors" class="alert alert-danger d-none"></div>
+                    <div id="tagErrors" class="alert alert-danger d-none rounded-3"></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="createTag()">Crear Tag</button>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="createTag()">
+                    <i class="fas fa-plus me-1"></i>Crear Tag
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <style>
+    /* Estilos globales para formularios */
     .form-control, .form-select {
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
     }
+    
     .form-control:focus, .form-select:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        background-color: #fff;
     }
-    .card {
-        border: 1px solid rgba(0,0,0,.125);
-        border-radius: 0.375rem;
+
+    /* Estilos para el editor Quill */
+    #quill-editor {
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        background-color: white;
+    }
+
+    .ql-toolbar.ql-snow {
+        border: none;
+        border-bottom: 2px solid #e9ecef;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .ql-container.ql-snow {
+        border: none;
+        font-size: 1.05rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Mejorar el aspecto de los botones */
+    .btn {
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+    }
+
+    /* Estilo para los cards laterales */
+    .card-header.bg-gradient {
+        border: none;
+    }
+
+    /* Mejorar los modales */
+    .modal-content {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+        border-bottom: 2px solid #e9ecef;
+        padding: 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    /* Animación para el avatar circle */
+    .rounded-circle {
+        transition: transform 0.3s ease;
+    }
+
+    .rounded-circle:hover {
+        transform: scale(1.05);
     }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Mostrar modal de loading al enviar formulario
+        // Inicializar Quill Editor
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Escribe el contenido del post aquí...'
+        });
+
+        // Cargar contenido existente en el editor
+        const existingContent = document.getElementById('content-hidden').value;
+        if (existingContent) {
+            quill.root.innerHTML = existingContent;
+        }
+
+        // Sincronizar contenido de Quill con el input hidden antes de enviar el formulario
         const form = document.querySelector('form');
         const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
         
         form.addEventListener('submit', function(e) {
+            // Sincronizar contenido de Quill
+            document.getElementById('content-hidden').value = quill.root.innerHTML;
+            
             document.getElementById('loadingText').textContent = 'Actualizando post...';
             loadingModal.show();
             document.getElementById('submitBtn').disabled = true;

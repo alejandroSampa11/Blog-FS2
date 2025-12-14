@@ -82,8 +82,8 @@ class PostForm(forms.ModelForm):
                 'placeholder': 'Resumen breve del post'
             }),
             'content': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 10
+                'class': 'form-control django-ckeditor-widget',
+                'rows': 15
             }),
             'featured_image': forms.Select(attrs={
                 'class': 'form-control'

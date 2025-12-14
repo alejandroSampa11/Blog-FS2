@@ -24,25 +24,121 @@
             {% endif %}
 
             <!-- Filtros -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <input type="text" name="q" class="form-control" placeholder="Buscar por título o contenido..." value="{{ request.GET.q }}">
-                        </div>
-                        <div class="col-md-3">
-                            <select name="status" class="form-select">
-                                <option value="">Todos los estados</option>
-                                <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Borrador</option>
-                                <option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Publicado</option>
-                                <option value="archived" {% if request.GET.status == 'archived' %}selected{% endif %}>Archivado</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'admin_post_list' %}" class="btn btn-light w-100">Limpiar Filtros</a>
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10 border-0">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="fas fa-filter text-primary me-2"></i>Filtros de Búsqueda
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="get">
+                        <div class="row g-3">
+                            <!-- Búsqueda de texto -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-search text-primary me-1"></i>Buscar
+                                </label>
+                                <input type="text" name="q" class="form-control" 
+                                       placeholder="Buscar por título o contenido..." 
+                                       value="{{ current_filters.q }}">
+                            </div>
+
+                            <!-- Estado -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-flag text-primary me-1"></i>Estado
+                                </label>
+                                <select name="status" class="form-select">
+                                    <option value="">Todos los estados</option>
+                                    <option value="draft" {% if current_filters.status == 'draft' %}selected{% endif %}>Borrador</option>
+                                    <option value="published" {% if current_filters.status == 'published' %}selected{% endif %}>Publicado</option>
+                                    <option value="archived" {% if current_filters.status == 'archived' %}selected{% endif %}>Archivado</option>
+                                </select>
+                            </div>
+
+                            <!-- Destacado -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-star text-warning me-1"></i>Destacado
+                                </label>
+                                <select name="featured" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="1" {% if request.GET.featured == '1' %}selected{% endif %}>Destacados</option>
+                                    <option value="0" {% if request.GET.featured == '0' %}selected{% endif %}>No destacados</option>
+                                </select>
+                            </div>
+
+                            <!-- Categoría -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-folder text-primary me-1"></i>Categoría
+                                </label>
+                                <select name="category" class="form-select">
+                                    <option value="">Todas las categorías</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if current_filters.category|add:"0" == category.id %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Autor -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-user text-primary me-1"></i>Autor
+                                </label>
+                                <select name="author" class="form-select">
+                                    <option value="">Todos los autores</option>
+                                    {% for author in authors %}
+                                        <option value="{{ author.id }}" {% if current_filters.author|add:"0" == author.id %}selected{% endif %}>
+                                            {{ author.username }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Tag -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-tag text-primary me-1"></i>Tag
+                                </label>
+                                <select name="tag" class="form-select">
+                                    <option value="">Todos los tags</option>
+                                    {% for tag in tags %}
+                                        <option value="{{ tag.id }}" {% if current_filters.tag|add:"0" == tag.id %}selected{% endif %}>
+                                            {{ tag.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Año -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar text-primary me-1"></i>Año
+                                </label>
+                                <select name="year" class="form-select">
+                                    <option value="">Todos los años</option>
+                                    {% for year in years %}
+                                        <option value="{{ year }}" {% if current_filters.year|add:"0" == year %}selected{% endif %}>
+                                            {{ year }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="col-12">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{% url 'admin_post_list' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                        <i class="fas fa-eraser me-1"></i>Limpiar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                        <i class="fas fa-search me-1"></i>Filtrar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>

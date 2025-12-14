@@ -113,12 +113,22 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if user.role == 'admin' %}
+                                <li><h6 class="dropdown-header"><i class="fas fa-newspaper me-1"></i>Posts</h6></li>
                                 <li><a class="dropdown-item" href="{% url 'admin_post_list' %}">
-                                    <i class="fas fa-newspaper"></i> Gestionar Posts
+                                    <i class="fas fa-list"></i> Gestionar Posts
                                 </a></li>
                                 <li><a class="dropdown-item" href="{% url 'admin_create_post' %}">
                                     <i class="fas fa-plus"></i> Crear Post
                                 </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header"><i class="fas fa-tags me-1"></i>Organización</h6></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_category_list' %}">
+                                    <i class="fas fa-folder"></i> Gestionar Categorías
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_tag_list' %}">
+                                    <i class="fas fa-tags"></i> Gestionar Tags
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'admin:index' %}">
                                     <i class="fas fa-cog"></i> Admin Django
                                 </a></li>

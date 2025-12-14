@@ -102,53 +102,90 @@
                 
                 <!-- Comments List -->
                 {% for comment in comments %}
-                <div class="comment-box">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between">
-                                <strong>{{ comment.user.username }}</strong>
-                                <small class="text-muted">{{ comment.created_at|date:"d M, Y H:i" }}</small>
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <!-- Avatar -->
+                            <div class="me-3">
+                                <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 50%; font-weight: bold; font-size: 20px;">
+                                    {{ comment.user.username|first|upper }}
+                                </div>
                             </div>
-                            <p class="mt-2 mb-0">{{ comment.content }}</p>
                             
-                            <!-- Replies -->
-                            {% if comment.replies.all %}
-                            <div class="reply-comment mt-3">
-                                {% for reply in comment.replies.all %}
-                                {% if reply.is_approved %}
-                                <div class="comment-box">
-                                    <div class="d-flex justify-content-between">
-                                        <strong>{{ reply.user.username }}</strong>
-                                        <small class="text-muted">{{ reply.created_at|date:"d M, Y H:i" }}</small>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong class="text-dark">{{ comment.user.username }}</strong>
+                                        <small class="text-muted ms-2">
+                                            <i class="fas fa-clock me-1"></i>{{ comment.created_at|date:"d M, Y H:i" }}
+                                        </small>
                                     </div>
-                                    <p class="mt-2 mb-0">{{ reply.content }}</p>
+                                </div>
+                                <p class="mb-2" style="line-height: 1.6;">{{ comment.content }}</p>
+                                
+                                {% if user.is_authenticated %}
+                                <button class="btn btn-sm btn-link text-primary p-0 text-decoration-none" onclick="showReplyForm('{{ comment.id }}')">
+                                    <i class="fas fa-reply me-1"></i>Responder
+                                </button>
+                                {% endif %}
+                                
+                                <!-- Reply Form (hidden by default) -->
+                                {% if user.is_authenticated %}
+                                <div id="reply-form-{{ comment.id }}" style="display: none;" class="mt-3 p-3 bg-light rounded-3">
+                                    <form method="post" action="{% url 'add_comment' post.slug %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                        <textarea name="content" class="form-control mb-2" rows="2" placeholder="Escribe tu respuesta..." required></textarea>
+                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">
+                                            <i class="fas fa-paper-plane me-1"></i>Enviar
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="hideReplyForm('{{ comment.id }}')">
+                                            Cancelar
+                                        </button>
+                                    </form>
                                 </div>
                                 {% endif %}
-                                {% endfor %}
+                                
+                                <!-- Replies -->
+                                {% if comment.replies.all %}
+                                <div class="mt-3 ms-4 border-start border-primary border-3 ps-3">
+                                    {% for reply in comment.replies.all %}
+                                    {% if reply.is_approved %}
+                                    <div class="card mb-2 border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-start">
+                                                <!-- Reply Avatar -->
+                                                <div class="me-2">
+                                                    <div class="avatar-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 50%; font-weight: bold; font-size: 16px;">
+                                                        {{ reply.user.username|first|upper }}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <strong class="text-dark" style="font-size: 0.95rem;">{{ reply.user.username }}</strong>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock me-1"></i>{{ reply.created_at|date:"d M, Y H:i" }}
+                                                        </small>
+                                                    </div>
+                                                    <p class="mb-0" style="font-size: 0.95rem; line-height: 1.5;">{{ reply.content }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                            
-                            {% if user.is_authenticated %}
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="showReplyForm('{{ comment.id }}')">
-                                <i class="fas fa-reply"></i> Responder
-                            </button>
-                            
-                            <!-- Reply Form (hidden by default) -->
-                            <div id="reply-form-{{ comment.id }}" style="display: none;" class="mt-3">
-                                <form method="post" action="{% url 'add_comment' post.slug %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                                    <textarea name="content" class="form-control" rows="2" placeholder="Escribe tu respuesta..." required></textarea>
-                                    <button type="submit" class="btn btn-sm btn-primary mt-2">Enviar</button>
-                                    <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="hideReplyForm('{{ comment.id }}')">Cancelar</button>
-                                </form>
-                            </div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-muted">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+                </div>
                 {% endfor %}
             </section>
         </div>

@@ -17,6 +17,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Crear extensión pg_trgm para búsqueda con índices GIN
+        migrations.RunSQL(
+            sql='CREATE EXTENSION IF NOT EXISTS pg_trgm;',
+            reverse_sql='DROP EXTENSION IF EXISTS pg_trgm;'
+        ),
         migrations.CreateModel(
             name='Category',
             fields=[
