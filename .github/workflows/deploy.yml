@@ -38,11 +38,12 @@ jobs:
             echo "Stop old containers"
             docker-compose down --remove-orphans
 
-            echo "Create media directory if it doesn't exist"
+            echo "Create media directory with correct permissions"
             mkdir -p media
+            chmod 777 media
 
             echo "Build images"
-            docker-compose build
+            docker-compose build --no-cache
 
             echo "Start containers"
             docker-compose up -d

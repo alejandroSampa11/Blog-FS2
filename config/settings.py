@@ -25,9 +25,9 @@ SECRET_KEY = 'django-insecure-kid2f%bu(is#ecuu(u!bfb&((#b5)58%j+*+sl)9wy*z8jgh07
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG") == "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 
 # Application definition
