@@ -38,6 +38,9 @@ jobs:
             echo "Stop old containers"
             docker-compose down --remove-orphans
 
+            echo "Create media directory if it doesn't exist"
+            mkdir -p media
+
             echo "Build images"
             docker-compose build
 

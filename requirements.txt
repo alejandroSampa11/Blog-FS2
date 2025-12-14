@@ -5,3 +5,4 @@ Pillow
 django-ckeditor
 django-taggit
 python-slugify
+whitenoise
